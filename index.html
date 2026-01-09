@@ -836,7 +836,7 @@ function startSpeedRound() {
     showQuestion();
 }
 
-// QUOTE MATCH - Punti mantenuti + feedback visivo
+// QUOTE MATCH - Reset completo quando si sbaglia
 const quotes = [
     { quote: "O Romeo, Romeo, wherefore art thou Romeo?", character: "JULIET" },
     { quote: "A plague on both your houses!", character: "MERCUTIO" },
@@ -913,7 +913,7 @@ function startQuoteMatch() {
                         <p style="margin-top: 30px; font-size: 0.9em; color: #666;">
                             💡 Drag the quote to the correct character<br>
                             ✅ Correct = +10 points & next quote<br>
-                            ❌ Wrong = keep your points but next team continues
+                            ❌ Wrong = keep points but game restarts for next team
                         </p>
                     </div>
                 </div>
@@ -935,7 +935,11 @@ function startQuoteMatch() {
                 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    alert(`⏰ Time's up!\n${teams[currentTeamIndex].name} keeps their points but didn't complete all quotes!\n\nNext team continues from quote ${currentQuoteIndex + 1}!`);
+                    
+                    // Calcola quanti punti ha fatto questa squadra
+                    const pointsEarned = currentQuoteIndex * 10;
+                    
+                    alert(`⏰ Time's up!\n${teams[currentTeamIndex].name} earned ${pointsEarned} points!\n\nGame restarts from quote 1 for next team!`);
                     teamsAttempted.add(currentTeamIndex);
                     
                     if (teamsAttempted.size === teams.length) {
@@ -947,7 +951,7 @@ function startQuoteMatch() {
                             currentTeamIndex = (currentTeamIndex + 1) % teams.length;
                         }
                         updateScoreboard();
-                        render(); // Continua dalla stessa quote
+                        startQuoteMatch(); // RICOMINCIA DA CAPO
                     }
                 }
             }, 1000);
@@ -996,11 +1000,14 @@ function startQuoteMatch() {
                 }
                 currentQuoteIndex++;
                 render(); // Mostra prossima citazione
-            }, 2000);
+            }, 800);
             
         } else {
-            // RISPOSTA SBAGLIATA! Tiene i punti ma perde il turno
+            // RISPOSTA SBAGLIATA! Tiene i punti ma il gioco riparte da capo
             clearInterval(timerInterval);
+            
+            // Calcola quanti punti ha fatto questa squadra
+            const pointsEarned = currentQuoteIndex * 10;
             
             // Feedback visivo: slot diventa rosso per 1.5 secondi
             const charSlot = document.getElementById(`char-${character}`);
@@ -1018,7 +1025,7 @@ function startQuoteMatch() {
                     charSlot.style.transform = '';
                 }
                 
-                alert(`❌ Wrong!\n\nThe quote was from ${correctChar}, not ${character}.\n\n${teams[currentTeamIndex].name} keeps their points!\nNext team continues from quote ${currentQuoteIndex + 1}!`);
+                alert(`❌ Wrong!\n\nThe quote was from ${correctChar}, not ${character}.\n\n${teams[currentTeamIndex].name} earned ${pointsEarned} points and keeps them!\n\nGame restarts from quote 1 for next team!`);
                 
                 teamsAttempted.add(currentTeamIndex);
                 
@@ -1031,7 +1038,7 @@ function startQuoteMatch() {
                         currentTeamIndex = (currentTeamIndex + 1) % teams.length;
                     }
                     updateScoreboard();
-                    render(); // La prossima squadra continua dalla stessa quote
+                    startQuoteMatch(); // RICOMINCIA DA CAPO CON NUOVO TIMER
                 }
             }, 1500);
         }
@@ -1040,7 +1047,9 @@ function startQuoteMatch() {
     window.skipToNextTeam = function() {
         clearInterval(timerInterval);
         
-        alert(`${teams[currentTeamIndex].name} skipped their turn and keeps their points.`);
+        const pointsEarned = currentQuoteIndex * 10;
+        
+        alert(`${teams[currentTeamIndex].name} skipped and earned ${pointsEarned} points!\n\nGame restarts from quote 1 for next team!`);
         
         teamsAttempted.add(currentTeamIndex);
         
@@ -1053,13 +1062,12 @@ function startQuoteMatch() {
                 currentTeamIndex = (currentTeamIndex + 1) % teams.length;
             }
             updateScoreboard();
-            render();
+            startQuoteMatch(); // RICOMINCIA DA CAPO
         }
     };
 
     render();
 }
-
 
 
 // MEMORY GAME con punti per ogni coppia trovata
