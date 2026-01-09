@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romeo & Juliet Game Hub</title>
+    <style>
+        :root {
+            --burgundy: #79081cff;
+            --brick-ember: #c80000ff;
+            --pumpkin-spice: #ff6f00ff;
+            --lilac: #ccabd6ff;
+            --velvet-orchid: #6d378fff;
+            --indigo: #400095ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, var(--velvet-orchid) 0%, var(--indigo) 100%);
+            min-height: 100vh;
+            color: #333;
+            padding-bottom: 60px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .setup-screen {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .team-setup {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .team-input {
+            padding: 15px;
+            border: 2px solid var(--velvet-orchid);
+            border-radius: 10px;
+            background: #f8f9ff;
+        }
+
+        .team-input h3 {
+            margin-bottom: 10px;
+            color: var(--velvet-orchid);
+        }
+
+        .team-input input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .team-input select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .start-btn {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--velvet-orchid) 0%, var(--indigo) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .game-screen {
+            display: none;
+        }
+
+        .scoreboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .team-score {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .team-score:hover {
+            transform: translateY(-3px);
+        }
+
+        .team-score.active {
+            border: 3px solid var(--pumpkin-spice);
+            box-shadow: 0 0 20px rgba(255, 111, 0, 0.5);
+        }
+
+        .team-score h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .team-score .score {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--velvet-orchid);
+        }
+
+        .team-score .emblem {
+            font-size: 3em;
+            margin: 10px 0;
+        }
+
+        .game-area {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            min-height: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .game-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .game-btn {
+            padding: 30px;
+            background: linear-gradient(135deg, var(--brick-ember) 0%, var(--burgundy) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .game-btn:hover {
+            transform: translateY(-5px);
+        }
+
+        .wheel-container {
+            text-align: center;
+        }
+
+        .wheel {
+            width: 300px;
+            height: 300px;
+            border: 10px solid var(--velvet-orchid);
+            border-radius: 50%;
+            margin: 20px auto;
+            position: relative;
+            background: conic-gradient(
+                var(--brick-ember) 0deg 90deg,
+                var(--pumpkin-spice) 90deg 180deg,
+                var(--lilac) 180deg 270deg,
+                var(--velvet-orchid) 270deg 360deg
+            );
+            transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+
+        .word-display {
+            font-size: 2em;
+            letter-spacing: 10px;
+            margin: 30px 0;
+            font-family: monospace;
+        }
+
+        .letter-box {
+            display: inline-block;
+            width: 40px;
+            height: 50px;
+            border: 2px solid #333;
+            margin: 0 3px;
+            line-height: 50px;
+            text-align: center;
+            background: white;
+        }
+
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .key {
+            padding: 15px 20px;
+            background: var(--velvet-orchid);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .key:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .guillotine-word {
+            font-size: 2.5em;
+            text-align: center;
+            margin: 30px 0;
+            color: var(--velvet-orchid);
+        }
+
+        .clue-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .clue-list li {
+            background: #f8f9ff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid var(--velvet-orchid);
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            border: 2px solid var(--velvet-orchid);
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            background: var(--velvet-orchid);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            margin: 10px;
+        }
+
+        .btn:hover {
+            background: var(--indigo);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .number-question {
+            font-size: 2.5em;
+            text-align: center;
+            margin: 40px 0;
+            color: var(--velvet-orchid);
+            min-height: 150px;
+        }
+
+        .timer {
+            font-size: 3em;
+            color: var(--brick-ember);
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .score-input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .score-input-box {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid var(--velvet-orchid);
+        }
+
+        .score-input-box input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1.2em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .speed-question {
+            font-size: 2em;
+            text-align: center;
+            margin: 40px 0;
+            min-height: 100px;
+        }
+
+        .tf-buttons {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            margin: 40px 0;
+        }
+
+        .tf-btn {
+            padding: 40px 80px;
+            font-size: 2em;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .true-btn {
+            background: var(--pumpkin-spice);
+            color: white;
+        }
+
+        .false-btn {
+            background: var(--brick-ember);
+            color: white;
+        }
+
+        .tf-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .quote-match-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            min-height: 500px;
+        }
+
+        .characters-list {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .character-slot {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 2px solid var(--velvet-orchid);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .character-slot.has-quote {
+            background: #e8f5e9;
+            border-color: var(--pumpkin-spice);
+        }
+
+        .quote-area {
+            background: #fff9e6;
+            padding: 30px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .quote-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            border: 3px dashed var(--velvet-orchid);
+            font-size: 1.4em;
+            font-style: italic;
+            cursor: move;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .quote-box.dragging {
+            opacity: 0.5;
+        }
+
+        .character-slot.drag-over {
+            background: #ffe6e6;
+            border-color: var(--brick-ember);
+        }
+
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 600px;
+            margin: 30px auto;
+        }
+
+        .memory-card {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, var(--velvet-orchid) 0%, var(--indigo) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .memory-card:hover {
+            transform: scale(1.05);
+        }
+
+        .memory-card.flipped {
+            background: white;
+            color: #333;
+            border: 3px solid var(--velvet-orchid);
+        }
+
+        .memory-card.matched {
+            background: var(--pumpkin-spice);
+            color: white;
+            cursor: default;
+        }
+
+        .scramble-word {
+            font-size: 3em;
+            letter-spacing: 15px;
+            text-align: center;
+            color: var(--velvet-orchid);
+            margin: 40px 0;
+            font-family: monospace;
+        }
+
+        .scramble-input {
+            width: 80%;
+            max-width: 500px;
+            padding: 20px;
+            font-size: 1.5em;
+            text-align: center;
+            border: 3px solid var(--velvet-orchid);
+            border-radius: 10px;
+            display: block;
+            margin: 30px auto;
+        }
+
+        .correct-answer {
+            font-size: 3em;
+            color: var(--pumpkin-spice);
+            text-align: center;
+            margin: 30px 0;
+            font-weight: bold;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--burgundy);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 1.1em;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 Romeo & Juliet Challenge 🎭</h1>
+
+        <!-- Setup Screen -->
+        <div class="setup-screen" id="setupScreen">
+            <h2 style="text-align: center; margin-bottom: 30px;">Create Your Teams</h2>
+            <div class="team-setup">
+                <div class="team-input">
+                    <h3>Team 1: Montagues ⚔️</h3>
+                    <input type="text" id="team1Name" placeholder="Team Name" value="Montagues">
+                    <select id="team1Emblem">
+                        <option value="🦁">🦁 Lion</option>
+                        <option value="🗡️">🗡️ Sword</option>
+                        <option value="👑">👑 Crown</option>
+                        <option value="🛡️">🛡️ Shield</option>
+                        <option value="⚔️">⚔️ Crossed Swords</option>
+                    </select>
+                </div>
+                <div class="team-input">
+                    <h3>Team 2: Capulets 🏰</h3>
+                    <input type="text" id="team2Name" placeholder="Team Name" value="Capulets">
+                    <select id="team2Emblem">
+                        <option value="🦅">🦅 Eagle</option>
+                        <option value="🏰">🏰 Castle</option>
+                        <option value="💎">💎 Diamond</option>
+                        <option value="🌹">🌹 Rose</option>
+                        <option value="👑">👑 Crown</option>
+                    </select>
+                </div>
+                <div class="team-input">
+                    <h3>Team 3: The Prince's Court 👨‍⚖️</h3>
+                    <input type="text" id="team3Name" placeholder="Team Name" value="The Court">
+                    <select id="team3Emblem">
+                        <option value="⚖️">⚖️ Scales</option>
+                        <option value="📜">📜 Scroll</option>
+                        <option value="🎭">🎭 Theatre Masks</option>
+                        <option value="✨">✨ Stars</option>
+                        <option value="🕊️">🕊️ Dove</option>
+                    </select>
+                </div>
+                <div class="team-input">
+                    <h3>Team 4: Star-Crossed Lovers 💫</h3>
+                    <input type="text" id="team4Name" placeholder="Team Name" value="Star-Crossed">
+                    <select id="team4Emblem">
+                        <option value="💖">💖 Heart</option>
+                        <option value="💫">💫 Stars</option>
+                        <option value="🌙">🌙 Moon</option>
+                        <option value="🌟">🌟 Shining Star</option>
+                        <option value="💕">💕 Two Hearts</option>
+                    </select>
+                </div>
+            </div>
+            <button class="start-btn" onclick="startGame()">Start the Challenge! ⚔️</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div class="game-screen" id="gameScreen">
+            <div class="scoreboard" id="scoreboard"></div>
+            
+            <div class="game-area" id="gameArea">
+                <h2 style="text-align: center; margin-bottom: 30px;">Choose Your Game</h2>
+                <div class="game-menu">
+                    <button class="game-btn" onclick="startNumberGame()">🔢 The Number Game</button>
+                    <button class="game-btn" onclick="startSpeedRound()">⚡ Speed Round</button>
+                    <button class="game-btn" onclick="startQuoteMatch()">💬 Quote Match</button>
+                    <button class="game-btn" onclick="startMemoryGame()">🃏 Memory Pairs</button>
+                    <button class="game-btn" onclick="startWordScramble()">🔤 Word Scramble</button>
+                    <button class="game-btn" onclick="startWheelGame()">🎡 Wheel of Fortune</button>
+                    <button class="game-btn" onclick="startGuillotineGame()">🎯 The Final Choice</button>
+                    <button class="game-btn" onclick="startGrammarGame()">📝 Grammar Challenge</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Created by Ms Fatigato 🎭
+    </footer>
+
+    <script>
+        let teams = [];
+        let currentTeamIndex = 0;
+
+        function startGame() {
+            teams = [
+                {
+                    name: document.getElementById('team1Name').value,
+                    emblem: document.getElementById('team1Emblem').value,
+                    score: 0
+                },
+                {
+                    name: document.getElementById('team2Name').value,
+                    emblem: document.getElementById('team2Emblem').value,
+                    score: 0
+                },
+                {
+                    name: document.getElementById('team3Name').value,
+                    emblem: document.getElementById('team3Emblem').value,
+                    score: 0
+                },
+                {
+                    name: document.getElementById('team4Name').value,
+                    emblem: document.getElementById('team4Emblem').value,
+                    score: 0
+                }
+            ];
+
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            updateScoreboard();
+        }
+
+        function updateScoreboard() {
+            const scoreboard = document.getElementById('scoreboard');
+            scoreboard.innerHTML = teams.map((team, index) => `
+                <div class="team-score ${index === currentTeamIndex ? 'active' : ''}" onclick="switchTeam(${index})">
+                    <div class="emblem">${team.emblem}</div>
+                    <h3>${team.name}</h3>
+                    <div class="score">${team.score}</div>
+                </div>
+            `).join('');
+        }
+
+        function switchTeam(index) {
+            currentTeamIndex = index;
+            updateScoreboard();
+        }
+
+        function showScoreboard() {
+            document.getElementById('gameArea').innerHTML = `
+                <h2 style="text-align: center; margin-bottom: 30px;">Choose Your Game</h2>
+                <div class="game-menu">
+                    <button class="game-btn" onclick="startNumberGame()">🔢 The Number Game</button>
+                    <button class="game-btn" onclick="startSpeedRound()">⚡ Speed Round</button>
+                    <button class="game-btn" onclick="startQuoteMatch()">💬 Quote Match</button>
+                    <button class="game-btn" onclick="startMemoryGame()">🃏 Memory Pairs</button>
+                    <button class="game-btn" onclick="startWordScramble()">🔤 Word Scramble</button>
+                    <button class="game-btn" onclick="startWheelGame()">🎡 Wheel of Fortune</button>
+                    <button class="game-btn" onclick="startGuillotineGame()">🎯 The Final Choice</button>
+                    <button class="game-btn" onclick="startGrammarGame()">📝 Grammar Challenge</button>
+                </div>
+            `;
+        }
+
+        // NUMBER GAME
+        const numberQuestions = [
+            { question: "How old is Juliet?", answer: 13 },
+            { question: "How many days does the story last?", answer: 5 },
+            { question: "How many people die in the play?", answer: 6 },
+            { question: "In which ACT does Romeo meet Juliet?", answer: 1 },
+            { question: "How many feuding families are there?", answer: 2 }
+        ];
+
+        function startNumberGame() {
+            const question = numberQuestions[Math.floor(Math.random() * numberQuestions.length)];
+            let timeLeft = 10;
+            let timerInterval;
+
+            document.getElementById('gameArea').innerHTML = `
+                <div style="text-align: center;">
+                    <h2>🔢 The Number Game</h2>
+                    <div class="timer" id="timer">10</div>
+                    <div class="number-question">${question.question}</div>
+                    <p style="font-size: 1.3em; color: #666;">Students write their answers on paper!</p>
+                    <button class="btn" id="startTimerBtn" onclick="startTimer()">Start Timer</button>
+                    <div id="answerReveal" style="display: none;">
+                        <div class="correct-answer">Answer: ${question.answer}</div>
+                    </div>
+                    <div id="inputSection" style="display: none;">
+                        <h3 style="margin: 30px 0;">Enter Team Answers:</h3>
+                        <div class="score-input-grid">
+                            ${teams.map((team, i) => `
+                                <div class="score-input-box">
+                                    <strong>${team.emblem} ${team.name}</strong>
+                                    <input type="number" id="answer${i}" placeholder="Answer">
+                                </div>
+                            `).join('')}
+                        </div>
+                        <button class="btn" onclick="checkNumberAnswers(${question.answer})">Check Answers</button>
+                    </div>
+                    <button class="btn" onclick="showScoreboard()">Back to Menu</button>
+                </div>
+            `;
+
+            window.startTimer = function() {
+                document.getElementById('startTimerBtn').disabled = true;
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    document.getElementById('timer').textContent = timeLeft;
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        document.getElementById('timer').textContent = "TIME'S UP!";
+                        setTimeout(() => {
+                            document.getElementById('answerReveal').style.display = 'block';
+                            setTimeout(() => {
+                                document.getElementById('inputSection').style.display = 'block';
+                            }, 1000);
+                        }, 1000);
+                    }
+                }, 1000);
+            };
+        }
+
+        function checkNumberAnswers(correctAnswer) {
+            teams.forEach((team, i) => {
+                const answer = parseInt(document.getElementById(`answer${i}`).value);
+                const diff = Math.abs(answer - correctAnswer);
+                if (diff === 0) {
+                    team.score += 50;
+                } else if (diff === 1) {
+                    team.score += 30;
+                } else if (diff === 2) {
+                    team.score += 10;
+                }
+            });
+            updateScoreboard();
+            alert(`Correct answer was: ${correctAnswer}\nScores updated!`);
+            showScoreboard();
+        }
+
+// SPEED ROUND con bonus velocità
+const speedQuestions = [
+    { question: "Romeo is a Capulet", answer: false },
+    { question: "Juliet drinks poison to die", answer: false },
+    { question: "Mercutio is killed by Tybalt", answer: true },
+    { question: "The story is set in Venice", answer: false },
+    { question: "Romeo and Juliet get married in secret", answer: true },
+    { question: "Juliet is 16 years old", answer: false },
+    { question: "Friar Lawrence helps the lovers", answer: true },
+    { question: "Paris wants to marry Juliet", answer: true },
+    { question: "Benvolio is Romeo's enemy", answer: false },
+    { question: "The play ends happily", answer: false }
+];
+
+function startSpeedRound() {
+    let currentQ = 0;
+    let score = 0;
+    let questionStartTime;
+    const timePerQuestion = 10; // 10 secondi per domanda
+
+    function showQuestion() {
+        if (currentQ >= speedQuestions.length) {
+            teams[currentTeamIndex].score += score;
+            updateScoreboard();
+            alert(`${teams[currentTeamIndex].name} scored ${score} points!`);
+            currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+            updateScoreboard();
+            showScoreboard();
+            return;
+        }
+
+        const q = speedQuestions[currentQ];
+        questionStartTime = Date.now(); // Inizia a contare il tempo
+        let timeLeft = timePerQuestion;
+        let countdown;
+
+        document.getElementById('gameArea').innerHTML = `
+            <div style="text-align: center;">
+                <h2>⚡ Speed Round</h2>
+                <p><strong>Team:</strong> ${teams[currentTeamIndex].name} ${teams[currentTeamIndex].emblem}</p>
+                <p style="font-size: 1.2em; margin: 20px 0;">Question ${currentQ + 1} of ${speedQuestions.length}</p>
+                <div class="timer" id="speedTimer" style="font-size: 2em; color: var(--pumpkin-spice);">${timeLeft}s</div>
+                <p style="font-size: 1.2em; margin: 20px 0;">Current Score: ${score} points</p>
+                <div class="speed-question">${q.question}</div>
+                <div class="tf-buttons">
+                    <button class="tf-btn true-btn" onclick="answerSpeed(true)">TRUE</button>
+                    <button class="tf-btn false-btn" onclick="answerSpeed(false)">FALSE</button>
+                </div>
+                <p style="margin-top: 20px; font-size: 0.9em; color: #666;">
+                    ⚡ Answer quickly for bonus points! ⚡<br>
+                    Instant: +15 pts | Fast (1-3s): +12 pts | Medium (4-6s): +10 pts | Slow (7-10s): +7 pts
+                </p>
+            </div>
+        `;
+
+        // Countdown visivo
+        countdown = setInterval(() => {
+            timeLeft--;
+            const timerEl = document.getElementById('speedTimer');
+            if (timerEl) {
+                timerEl.textContent = `${timeLeft}s`;
+                // Cambia colore in base al tempo
+                if (timeLeft <= 3) {
+                    timerEl.style.color = 'var(--brick-ember)';
+                } else if (timeLeft <= 6) {
+                    timerEl.style.color = 'var(--pumpkin-spice)';
+                }
+            }
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                alert("Time's up! No points for this question.");
+                currentQ++;
+                showQuestion();
+            }
+        }, 1000);
+
+        window.answerSpeed = function(answer) {
+            clearInterval(countdown);
+            
+            const timeElapsed = (Date.now() - questionStartTime) / 1000; // tempo in secondi
+            let points = 0;
+
+            if (answer === q.answer) {
+                // Calcola punti in base alla velocità
+                if (timeElapsed < 1) {
+                    points = 15; // Risposta istantanea!
+                } else if (timeElapsed < 3) {
+                    points = 12; // Molto veloce
+                } else if (timeElapsed < 6) {
+                    points = 10; // Veloce
+                } else {
+                    points = 7; // Lento ma corretto
+                }
+                score += points;
+            } else {
+                points = 0; // Risposta sbagliata = 0 punti
+            }
+
+            
+            setTimeout(() => {
+                currentQ++;
+                showQuestion();
+            }, 300);
+        };
+    }
+
+    showQuestion();
+}
+        // QUOTE MATCH
+        const quotes = [
+            { quote: "O Romeo, Romeo, wherefore art thou Romeo?", character: "JULIET" },
+            { quote: "A plague on both your houses!", character: "MERCUTIO" },
+            { quote: "What's in a name? A rose by any other name would smell as sweet", character: "JULIET" },
+            { quote: "These violent delights have violent ends", character: "FRIAR LAWRENCE" },
+            { quote: "For never was a story of more woe than this of Juliet and her Romeo", character: "PRINCE" }
+        ];
+
+        function startQuoteMatch() {
+            let currentQuoteIndex = 0;
+            let timeLeft = 60;
+            let timerInterval;
+            const characters = ["ROMEO", "JULIET", "MERCUTIO", "FRIAR LAWRENCE", "PRINCE", "TYBALT"];
+            let matched = new Set();
+
+            function render() {
+                const currentQuote = quotes[currentQuoteIndex];
+                document.getElementById('gameArea').innerHTML = `
+                    <div>
+                        <h2 style="text-align: center;">💬 Quote Match</h2>
+                        <p style="text-align: center;"><strong>Team:</strong> ${teams[currentTeamIndex].name} ${teams[currentTeamIndex].emblem}</p>
+                        <div class="timer" style="font-size: 2em;">Time: ${timeLeft}s</div>
+                        <p style="text-align: center; margin: 20px 0;">Quote ${currentQuoteIndex + 1} of ${quotes.length}</p>
+                        <div class="quote-match-container">
+                            <div class="characters-list">
+                                <h3 style="margin-bottom: 20px;">Characters:</h3>
+                                ${characters.map(char => `
+                                    <div class="character-slot ${matched.has(char) ? 'has-quote' : ''}" 
+                                         data-character="${char}"
+                                         ondrop="drop(event)" 
+                                         ondragover="allowDrop(event)"
+                                         ondragleave="dragLeave(event)">
+                                        ${char}
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="quote-area">
+                                <div class="quote-box" draggable="true" ondragstart="drag(event)">
+                                    "${currentQuote.quote}"
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn" onclick="showScoreboard()">Back to Menu</button>
+                    </div>
+                `;
+
+                if (!timerInterval) {
+                    timerInterval = set
+
+                    Interval(() => {
+                        timeLeft--;
+                        if (timeLeft <= 0) {
+                            clearInterval(timerInterval);
+                            alert("Time's up! Next team!");
+                            currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                            updateScoreboard();
+                            showScoreboard();
+                        } else {
+                            document.querySelector('.timer').textContent = `Time: ${timeLeft}s`;
+                        }
+                    }, 1000);
+                }
+            }
+
+            window.allowDrop = function(ev) {
+                ev.preventDefault();
+                ev.target.classList.add('drag-over');
+            };
+
+            window.dragLeave = function(ev) {
+                ev.target.classList.remove('drag-over');
+            };
+
+            window.drag = function(ev) {
+                ev.target.classList.add('dragging');
+            };
+
+            window.drop = function(ev) {
+                ev.preventDefault();
+                ev.target.classList.remove('drag-over');
+                const character = ev.target.dataset.character;
+                const correctChar = quotes[currentQuoteIndex].character;
+
+                if (character === correctChar) {
+                    matched.add(character);
+                    currentQuoteIndex++;
+                    if (currentQuoteIndex >= quotes.length) {
+                        clearInterval(timerInterval);
+                        const points = 100 + timeLeft;
+                        teams[currentTeamIndex].score += points;
+                        updateScoreboard();
+                        alert(`Congratulations! All quotes matched! +${points} points!`);
+                        currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                        updateScoreboard();
+                        showScoreboard();
+                    } else {
+                        render();
+                    }
+                } else {
+                    clearInterval(timerInterval);
+                    alert("Wrong! Next team starts from the beginning!");
+                    currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                    updateScoreboard();
+                    showScoreboard();
+                }
+            };
+
+            render();
+        }
+
+// MEMORY GAME con punti per ogni coppia trovata
+function startMemoryGame() {
+    const pairs = [
+        { id: 1, text: "Romeo" }, { id: 1, text: "Montague" },
+        { id: 2, text: "Juliet" }, { id: 2, text: "Capulet" },
+        { id: 3, text: "Tybalt" }, { id: 3, text: "Cousin" },
+        { id: 4, text: "Mercutio" }, { id: 4, text: "Friend" },
+        { id: 5, text: "Verona" }, { id: 5, text: "City" },
+        { id: 6, text: "Poison" }, { id: 6, text: "Death" },
+        { id: 7, text: "Balcony" }, { id: 7, text: "Scene" },
+        { id: 8, text: "Friar" }, { id: 8, text: "Lawrence" }
+    ];
+
+    let cards = [...pairs].sort(() => Math.random() - 0.5);
+    let flipped = [];
+    let matched = [];
+    let moves = 0;
+
+    function render() {
+        document.getElementById('gameArea').innerHTML = `
+            <div style="text-align: center;">
+                <h2>🃏 Memory Pairs</h2>
+                <p><strong>Team:</strong> ${teams[currentTeamIndex].name} ${teams[currentTeamIndex].emblem}</p>
+                <p style="font-size: 1.2em; margin: 20px 0;">Moves: ${moves} | Matched: ${matched.length / 2} / 8</p>
+                <p style="font-size: 1.1em; color: var(--pumpkin-spice); margin: 10px 0;">
+                    💎 +10 points for each pair found!
+                </p>
+                <div class="memory-grid">
+                    ${cards.map((card, index) => `
+                        <div class="memory-card ${flipped.includes(index) || matched.includes(index) ? 'flipped' : ''} 
+                             ${matched.includes(index) ? 'matched' : ''}"
+                             onclick="flipCard(${index})">
+                            ${flipped.includes(index) || matched.includes(index) ? card.text : '?'}
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="btn" onclick="showScoreboard()">Back to Menu</button>
+            </div>
+        `;
+    }
+
+    window.flipCard = function(index) {
+        if (flipped.length >= 2 || flipped.includes(index) || matched.includes(index)) return;
+
+        flipped.push(index);
+        render();
+
+        if (flipped.length === 2) {
+            moves++;
+            const [first, second] = flipped;
+            
+            if (cards[first].id === cards[second].id) {
+                // COPPIA TROVATA! +10 punti
+                matched.push(first, second);
+                teams[currentTeamIndex].score += 10;
+                updateScoreboard();
+                flipped = [];
+                
+                if (matched.length === cards.length) {
+                    // GIOCO COMPLETATO! Bonus finale
+                    const bonusPoints = Math.max(50 - (moves * 3), 10);
+                    teams[currentTeamIndex].score += bonusPoints;
+                    updateScoreboard();
+                    setTimeout(() => {
+                        alert(`🎉 All pairs found!\n\n💎 Pairs bonus: ${(matched.length / 2) * 10} points\n🏆 Completion bonus: +${bonusPoints} points\n📊 Total moves: ${moves}`);
+                        currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                        updateScoreboard();
+                        showScoreboard();
+                    }, 500);
+                } else {
+                    // Feedback positivo per la coppia trovata
+                    setTimeout(() => {
+                        alert(`✅ Match found! +10 points`);
+                        render();
+                    }, 300);
+                }
+            } else {
+                // ERRORE! Cambia squadra
+                setTimeout(() => {
+                    flipped = [];
+                    currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                    updateScoreboard();
+                    render();
+                }, 1000);
+            }
+        }
+    };
+
+    render();
+}
+        // WORD SCRAMBLE
+        const scrambleWords = [
+            { word: "VERONA", scrambled: "NEVOAR", hint: "The city" },
+            { word: "TYBALT", scrambled: "TYBLAT", hint: "Juliet's cousin" },
+            { word: "BALCONY", scrambled: "CYNOLBA", hint: "Famous scene" },
+            { word: "POISON", scrambled: "SONOIP", hint: "Romeo's death" },
+            { word: "MERCUTIO", scrambled: "CURMOTIE", hint: "Romeo's friend" },
+            { word: "CAPULET", scrambled: "TLECAPU", hint: "Juliet's family" },
+            { word: "MONTAGUE", scrambled: "GUETAMON", hint: "Romeo's family" }
+        ];
+
+        function startWordScramble() {
+            const word = scrambleWords[Math.floor(Math.random() * scrambleWords.length)];
+            let timeLeft = 25;
+            let timerInterval;
+
+            document.getElementById('gameArea').innerHTML = `
+                <div style="text-align: center;">
+                    <h2>🔤 Word Scramble</h2>
+                    <p><strong>Team:</strong> ${teams[currentTeamIndex].name} ${teams[currentTeamIndex].emblem}</p>
+                    <div class="timer">${timeLeft}</div>
+                    <p style="font-size: 1.3em; margin: 20px 0;"><strong>Hint:</strong> ${word.hint}</p>
+                    <div class="scramble-word">${word.scrambled}</div>
+                    <input type="text" class="scramble-input" id="scrambleAnswer" placeholder="Unscramble the word...">
+                    <div>
+                        <button class="btn" onclick="checkScramble('${word.word}')">Submit</button>
+                        <button class="btn" onclick="showScoreboard()">Back to Menu</button>
+                    </div>
+                </div>
+            `;
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.querySelector('.timer').textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert(`Time's up! The answer was: ${word.word}`);
+                    currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                    updateScoreboard();
+                    showScoreboard();
+                }
+            }, 1000);
+
+            window.checkScramble = function(correct) {
+                clearInterval(timerInterval);
+                const answer = document.getElementById('scrambleAnswer').value.toUpperCase().trim();
+                if (answer === correct) {
+                    const points = 30 + timeLeft;
+                    teams[currentTeamIndex].score += points;
+                    updateScoreboard();
+                    alert(`Correct! +${points} points!`);
+                } else {
+                    alert(`Wrong! The answer was: ${correct}`);
+                }
+                currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                updateScoreboard();
+                showScoreboard();
+            };
+        }
+
+        // WHEEL OF FORTUNE
+        const wheelPuzzles = [
+            { word: "VERONA", clue: "The city where the story takes place" },
+            { word: "BALCONY", clue: "Famous scene location" },
+            { word: "MONTAGUE", clue: "Romeo's family name" },
+            { word: "CAPULET", clue: "Juliet's family name" },
+            { word: "POISON", clue: "How Romeo dies" }
+        ];
+
+        function startWheelGame() {
+            const puzzle = wheelPuzzles[Math.floor(Math.random() * wheelPuzzles.length)];
+            const guessedLetters = new Set();
+            
+            document.getElementById('gameArea').innerHTML = `
+                <div class="wheel-container">
+                    <h2>🎡 Wheel of Fortune</h2>
+                    <p><strong>Current Team:</strong> ${teams[currentTeamIndex].name} ${teams[currentTeamIndex].emblem}</p>
+                    <p><strong>Clue:</strong> ${puzzle.clue}</p>
+                    <div class="word-display" id="wordDisplay"></div>
+                    <div class="keyboard" id="keyboard"></div>
+                    <button class="btn" onclick="showScoreboard()">Back to Menu</button>
+                </div>
+            `;
+
+            function displayWord() {
+                const display = puzzle.word.split('').map(letter => 
+                    `<span class="letter-box">${guessedLetters.has(letter) ? letter : ''}</span>`
+                ).join('');
+                document.getElementById('wordDisplay').innerHTML = display;
+            }
+
+            function createKeyboard() {
+                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+                const keyboard = document.getElementById('keyboard');
+                keyboard.innerHTML = letters.map(letter => 
+                    `<button class="key" onclick="guessLetter('${letter}')">${letter}</button>`
+                ).join('');
+            }
+
+            window.guessLetter = function(letter) {
+                guessedLetters.add(letter);
+                const buttons = document.querySelectorAll('.key');
+                buttons.forEach(btn => {
+                    if (btn.textContent === letter) btn.disabled = true;
+                });
+
+                if (puzzle.word.includes(letter)) {
+                    teams[currentTeamIndex].score += 10;
+                } else {
+                    currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                }
+
+                displayWord();
+                updateScoreboard();
+
+                if (puzzle.word.split('').every(l => guessedLetters.has(l))) {
+                    teams[currentTeamIndex].score += 50;
+                    updateScoreboard();
+                    setTimeout(() => {
+                        alert(`Congratulations ${teams[currentTeamIndex].name}! You solved it!`);
+                        showScoreboard();
+                    }, 500);
+                }
+            };
+
+            displayWord();
+            createKeyboard();
+        }
+
+        // THE FINAL CHOICE
+        const finalChoiceGames = [
+            {
+                clues: [
+                    "She is a Capulet",
+                    "She falls in love with Romeo",
+                    "She is only 13 years old",
+                    "She meets Romeo at a party",
+                    "Her name rhymes with 'violet'"
+                ],
+                options: ["JULIET", "ROSALINE", "LADY CAPULET", "THE NURSE"],
+                correct: "JULIET"
+            },
+            {
+                clues: [
+                    "He helps Romeo and Juliet marry",
+                    "He is a religious man",
+                    "He gives Juliet the sleeping potion",
+                    "His plan fails",
+                    "He is called Friar ___"
+                ],
+                options: ["LAWRENCE", "JOHN", "PETER", "BENVOLIO"],
+                correct: "LAWRENCE"
+            },
+            {
+                clues: [
+                    "He is Romeo's best friend",
+                    "He is killed by Tybalt",
+                    "He makes jokes and puns",
+                    "He talks about Queen Mab",
+                    "His death changes everything"
+                ],
+                options: ["MERCUTIO", "BENVOLIO", "TYBALT", "PARIS"],
+                correct: "MERCUTIO"
+            },
+            {
+                clues: [
+                    "He is Juliet's cousin",
+                    "He is aggressive and angry",
+                    "He kills Mercutio",
+                    "Romeo kills him for revenge",
+                    "His name starts with T"
+                ],
+                options: ["TYBALT", "PARIS", "GREGORY", "SAMPSON"],
+                correct: "TYBALT"
+            }
+        ];
+
+        function startGuillotineGame() {
+            const game = finalChoiceGames[Math.floor(Math.random() * finalChoiceGames.length)];
+            let clueIndex = 0;
+            let showingOptions = false;
+
+            document.getElementById('gameArea').innerHTML = `
+                <div class="guillotine-word">
+                    <h2>🎯 The Final Choice</h2>
+                    <p><strong>Current Team:</strong> ${teams[currentTeamIndex].name} ${teams[currentTeamIndex].emblem}</p>
+                    <p style="margin: 20px 0; font-size: 1.1em; color: #666;">Read the clues and write your answer or pay for multiple choice!</p>
+                    <ul class="clue-list" id="clueList"></ul>
+                    <div id="answerSection">
+                        <input type="text" class="answer-input" id="answerInput" placeholder="Type your answer...">
+                        <button class="btn" onclick="checkGuillotineAnswer()">Submit Answer</button>
+                        <button class="btn" onclick="showMultipleChoice()">Show Multiple Choice (-20 points)</button>
+                        <button class="btn" onclick="nextClue()">Show Next Clue (-10 points)</button>
+                    </div>
+                    <div id="optionsContainer" style="display: none; margin: 30px 0;">
+                        <h3 style="margin-bottom: 20px;">Choose the correct answer:</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            ${game.options.map(option => 
+                                `<button class="btn" style="padding: 25px; font-size: 1.1em;" 
+                                    onclick="checkFinalChoice('${option}', '${game.correct}')">${option}</button>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    <button class="btn" onclick="showScoreboard()">Back to Menu</button>
+                </div>
+            `;
+
+            function showClue() {
+                if (clueIndex < game.clues.length) {
+                    const clueList = document.getElementById('clueList');
+                    const li = document.createElement('li');
+                    li.textContent = `${clueIndex + 1}. ${game.clues[clueIndex]}`;
+                    clueList.appendChild(li);
+                    clueIndex++;
+                }
+            }
+
+            window.nextClue = function() {
+                if (clueIndex < game.clues.length && !showingOptions) {
+                    teams[currentTeamIndex].score = Math.max(0, teams[currentTeamIndex].score - 10);
+                    updateScoreboard();
+                    showClue();
+                }
+            };
+
+            window.showMultipleChoice = function() {
+                if (!showingOptions) {
+                    showingOptions = true;
+                    teams[currentTeamIndex].score = Math.max(0, teams[currentTeamIndex].score - 20);
+                    updateScoreboard();
+                    document.getElementById('answerSection').style.display = 'none';
+                    document.getElementById('optionsContainer').style.display = 'block';
+                }
+            };
+
+            window.checkGuillotineAnswer = function() {
+                const answer = document.getElementById('answerInput').value.toUpperCase().trim();
+                if (answer === game.correct) {
+                    const points = 100 - (clueIndex * 10);
+                    teams[currentTeamIndex].score += points;
+                    updateScoreboard();
+                    alert(`✅ Correct! +${points} points!`);
+                    showScoreboard();
+                } else {
+                    alert('❌ Wrong answer! Next team...');
+                    currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                    updateScoreboard();
+                    showScoreboard();
+                }
+            };
+
+            window.checkFinalChoice = function(selected, correct) {
+                if (selected === correct) {
+                    const points = 100 - (clueIndex * 10) - 20;
+                    teams[currentTeamIndex].score += Math.max(points, 10);
+                    updateScoreboard();
+                    alert(`✅ Correct! +${Math.max(points, 10)} points!`);
+                    showScoreboard();
+                } else {
+                    alert(`❌ Wrong! The correct answer was ${correct}. Next team...`);
+                    currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                    updateScoreboard();
+                    showScoreboard();
+                }
+            };
+
+            showClue();
+        }
+
+        // GRAMMAR CHALLENGE
+        const grammarQuestions = [
+            {
+                text: "Romeo ___ a Montague.",
+                options: ["is", "are", "has"],
+                correct: "is"
+            },
+            {
+                text: "Juliet ___ two cousins.",
+                options: ["have", "has", "is"],
+                correct: "has"
+            },
+            {
+                text: "The families ___ enemies.",
+                options: ["is", "are", "has"],
+                correct: "are"
+            },
+            {
+                text: "Friar Lawrence ___ a plan.",
+                options: ["have", "has", "is"],
+                correct: "has"
+            }
+        ];
+
+        function startGrammarGame() {
+            const question = grammarQuestions[Math.floor(Math.random() * grammarQuestions.length)];
+
+            document.getElementById('gameArea').innerHTML = `
+                <div style="text-align: center;">
+                    <h2>📝 Grammar Challenge</h2>
+                    <p><strong>Current Team:</strong> ${teams[currentTeamIndex].name} ${teams[currentTeamIndex].emblem}</p>
+                    <h3 style="margin: 40px 0; font-size: 1.8em;">${question.text}</h3>
+                    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                        ${question.options.map(option => 
+                            `<button class="btn" style="padding: 20px 40px; font-size: 1.5em;" 
+                                onclick="checkGrammar('${option}', '${question.correct}')">${option}</button>`
+                        ).join('')}
+                    </div>
+                    <button class="btn" onclick="showScoreboard()" style="margin-top: 40px;">Back to Menu</button>
+                </div>
+            `;
+        }
+
+        window.checkGrammar = function(selected, correct) {
+            if (selected === correct) {
+                teams[currentTeamIndex].score += 20;
+                alert('Correct! +20 points');
+            } else {
+                alert('Wrong! Next team...');
+                currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+            }
+            updateScoreboard();
+            startGrammarGame();
+        };
+    </script>
+</body>
+</html>
