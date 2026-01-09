@@ -573,7 +573,7 @@
                     <button class="game-btn" onclick="startQuoteMatch()">💬 Quote Match</button>
                     <button class="game-btn" onclick="startMemoryGame()">🃏 Memory Pairs</button>
                     <button class="game-btn" onclick="startWordScramble()">🔤 Word Scramble</button>
-                    <button class="game-btn" onclick="startWheelGame()">🎡 Wheel of Fortune</button>
+                    <button class="game-btn" onclick="startWheelGame()">🎡 The Hangman</button>
                     <button class="game-btn" onclick="startGuillotineGame()">🎯 The Final Choice</button>
                     <button class="game-btn" onclick="startGrammarGame()">📝 Grammar Challenge</button>
                 </div>
@@ -643,7 +643,7 @@
                     <button class="game-btn" onclick="startQuoteMatch()">💬 Quote Match</button>
                     <button class="game-btn" onclick="startMemoryGame()">🃏 Memory Pairs</button>
                     <button class="game-btn" onclick="startWordScramble()">🔤 Word Scramble</button>
-                    <button class="game-btn" onclick="startWheelGame()">🎡 Wheel of Fortune</button>
+                    <button class="game-btn" onclick="startWheelGame()">🎡 The hangman</button>
                     <button class="game-btn" onclick="startGuillotineGame()">🎯 The Final Choice</button>
                     <button class="game-btn" onclick="startGrammarGame()">📝 Grammar Challenge</button>
                 </div>
@@ -835,116 +835,232 @@ function startSpeedRound() {
 
     showQuestion();
 }
-        // QUOTE MATCH
-        const quotes = [
-            { quote: "O Romeo, Romeo, wherefore art thou Romeo?", character: "JULIET" },
-            { quote: "A plague on both your houses!", character: "MERCUTIO" },
-            { quote: "What's in a name? A rose by any other name would smell as sweet", character: "JULIET" },
-            { quote: "These violent delights have violent ends", character: "FRIAR LAWRENCE" },
-            { quote: "For never was a story of more woe than this of Juliet and her Romeo", character: "PRINCE" }
-        ];
 
-        function startQuoteMatch() {
-            let currentQuoteIndex = 0;
-            let timeLeft = 60;
-            let timerInterval;
-            const characters = ["ROMEO", "JULIET", "MERCUTIO", "FRIAR LAWRENCE", "PRINCE", "TYBALT"];
-            let matched = new Set();
+// QUOTE MATCH - Punti mantenuti + feedback visivo
+const quotes = [
+    { quote: "O Romeo, Romeo, wherefore art thou Romeo?", character: "JULIET" },
+    { quote: "A plague on both your houses!", character: "MERCUTIO" },
+    { quote: "What's in a name? A rose by any other name would smell as sweet", character: "JULIET" },
+    { quote: "These violent delights have violent ends", character: "FRIAR LAWRENCE" },
+    { quote: "For never was a story of more woe than this of Juliet and her Romeo", character: "PRINCE" },
+    { quote: "My only love sprung from my only hate!", character: "JULIET" },
+    { quote: "Thus with a kiss I die", character: "ROMEO" }
+];
 
-            function render() {
-                const currentQuote = quotes[currentQuoteIndex];
-                document.getElementById('gameArea').innerHTML = `
+function startQuoteMatch() {
+    let currentQuoteIndex = 0;
+    let timeLeft = 30;
+    let timerInterval;
+    const characters = ["ROMEO", "JULIET", "MERCUTIO", "FRIAR LAWRENCE", "PRINCE", "TYBALT", "NURSE"];
+    let teamsAttempted = new Set();
+
+    function render() {
+        if (currentQuoteIndex >= quotes.length) {
+            // VITTORIA! La squadra ha completato tutto in tempo
+            clearInterval(timerInterval);
+            const matchPoints = quotes.length * 10; // 7 × 10 = 70
+            const completionBonus = 50;
+            const timeBonus = timeLeft * 2;
+            const totalPoints = matchPoints + completionBonus + timeBonus;
+            teams[currentTeamIndex].score += totalPoints;
+            updateScoreboard();
+            alert(`🏆 ${teams[currentTeamIndex].name} WON!\n\n✅ All ${quotes.length} quotes matched!\n💎 Match points: ${matchPoints}\n🏆 Completion bonus: +${completionBonus}\n⏱️ Time bonus (${timeLeft}s × 2): +${timeBonus}\n💰 Total: +${totalPoints} points!`);
+            currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+            updateScoreboard();
+            showScoreboard();
+            return;
+        }
+
+        const currentQuote = quotes[currentQuoteIndex];
+        document.getElementById('gameArea').innerHTML = `
+            <div>
+                <h2 style="text-align: center;">💬 Quote Match</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <div>
-                        <h2 style="text-align: center;">💬 Quote Match</h2>
-                        <p style="text-align: center;"><strong>Team:</strong> ${teams[currentTeamIndex].name} ${teams[currentTeamIndex].emblem}</p>
-                        <div class="timer" style="font-size: 2em;">Time: ${timeLeft}s</div>
-                        <p style="text-align: center; margin: 20px 0;">Quote ${currentQuoteIndex + 1} of ${quotes.length}</p>
-                        <div class="quote-match-container">
-                            <div class="characters-list">
-                                <h3 style="margin-bottom: 20px;">Characters:</h3>
-                                ${characters.map(char => `
-                                    <div class="character-slot ${matched.has(char) ? 'has-quote' : ''}" 
-                                         data-character="${char}"
-                                         ondrop="drop(event)" 
-                                         ondragover="allowDrop(event)"
-                                         ondragleave="dragLeave(event)">
-                                        ${char}
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <div class="quote-area">
-                                <div class="quote-box" draggable="true" ondragstart="drag(event)">
-                                    "${currentQuote.quote}"
-                                </div>
-                            </div>
-                        </div>
-                        <button class="btn" onclick="showScoreboard()">Back to Menu</button>
+                        <p><strong>Team:</strong> ${teams[currentTeamIndex].name} ${teams[currentTeamIndex].emblem}</p>
                     </div>
-                `;
+                    <div class="timer" style="font-size: 2.5em; color: ${timeLeft <= 10 ? 'var(--brick-ember)' : 'var(--pumpkin-spice)'};">
+                        ${timeLeft}s
+                    </div>
+                </div>
+                <p style="text-align: center; margin: 20px 0; font-size: 1.2em;">
+                    Quote <strong>${currentQuoteIndex + 1}</strong> of <strong>${quotes.length}</strong>
+                </p>
+                <p style="text-align: center; margin: 10px 0; color: var(--velvet-orchid);">
+                    📋 Remaining: ${quotes.length - currentQuoteIndex}
+                </p>
+                <p style="text-align: center; margin: 10px 0; font-size: 0.9em; color: #666;">
+                    💎 +10 points per match | 🏆 +50 bonus for completing all quotes
+                </p>
+                <div class="quote-match-container">
+                    <div class="characters-list">
+                        <h3 style="margin-bottom: 20px;">Drag quote to character:</h3>
+                        ${characters.map(char => `
+                            <div class="character-slot" 
+                                 id="char-${char}"
+                                 data-character="${char}"
+                                 ondrop="drop(event)" 
+                                 ondragover="allowDrop(event)"
+                                 ondragleave="dragLeave(event)">
+                                ${char}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="quote-area">
+                        <div class="quote-box" draggable="true" ondragstart="drag(event)">
+                            "${currentQuote.quote}"
+                        </div>
+                        <p style="margin-top: 30px; font-size: 0.9em; color: #666;">
+                            💡 Drag the quote to the correct character<br>
+                            ✅ Correct = +10 points & next quote<br>
+                            ❌ Wrong = keep your points but next team continues
+                        </p>
+                    </div>
+                </div>
+                <button class="btn" onclick="skipToNextTeam()">Skip Turn (Next Team)</button>
+                <button class="btn" onclick="showScoreboard()">End Game</button>
+            </div>
+        `;
 
-                if (!timerInterval) {
-                    timerInterval = set
-
-                    Interval(() => {
-                        timeLeft--;
-                        if (timeLeft <= 0) {
-                            clearInterval(timerInterval);
-                            alert("Time's up! Next team!");
-                            currentTeamIndex = (currentTeamIndex + 1) % teams.length;
-                            updateScoreboard();
-                            showScoreboard();
-                        } else {
-                            document.querySelector('.timer').textContent = `Time: ${timeLeft}s`;
-                        }
-                    }, 1000);
+        if (!timerInterval) {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const timerEl = document.querySelector('.timer');
+                if (timerEl) {
+                    timerEl.textContent = `${timeLeft}s`;
+                    if (timeLeft <= 10) {
+                        timerEl.style.color = 'var(--brick-ember)';
+                    }
                 }
-            }
-
-            window.allowDrop = function(ev) {
-                ev.preventDefault();
-                ev.target.classList.add('drag-over');
-            };
-
-            window.dragLeave = function(ev) {
-                ev.target.classList.remove('drag-over');
-            };
-
-            window.drag = function(ev) {
-                ev.target.classList.add('dragging');
-            };
-
-            window.drop = function(ev) {
-                ev.preventDefault();
-                ev.target.classList.remove('drag-over');
-                const character = ev.target.dataset.character;
-                const correctChar = quotes[currentQuoteIndex].character;
-
-                if (character === correctChar) {
-                    matched.add(character);
-                    currentQuoteIndex++;
-                    if (currentQuoteIndex >= quotes.length) {
-                        clearInterval(timerInterval);
-                        const points = 100 + timeLeft;
-                        teams[currentTeamIndex].score += points;
-                        updateScoreboard();
-                        alert(`Congratulations! All quotes matched! +${points} points!`);
-                        currentTeamIndex = (currentTeamIndex + 1) % teams.length;
-                        updateScoreboard();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert(`⏰ Time's up!\n${teams[currentTeamIndex].name} keeps their points but didn't complete all quotes!\n\nNext team continues from quote ${currentQuoteIndex + 1}!`);
+                    teamsAttempted.add(currentTeamIndex);
+                    
+                    if (teamsAttempted.size === teams.length) {
+                        alert("All teams attempted but no one completed all quotes!\nGame over.");
                         showScoreboard();
                     } else {
-                        render();
+                        currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                        while (teamsAttempted.has(currentTeamIndex)) {
+                            currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                        }
+                        updateScoreboard();
+                        render(); // Continua dalla stessa quote
                     }
-                } else {
-                    clearInterval(timerInterval);
-                    alert("Wrong! Next team starts from the beginning!");
-                    currentTeamIndex = (currentTeamIndex + 1) % teams.length;
-                    updateScoreboard();
-                    showScoreboard();
                 }
-            };
+            }, 1000);
+        }
+    }
 
+    window.allowDrop = function(ev) {
+        ev.preventDefault();
+        ev.target.classList.add('drag-over');
+    };
+
+    window.dragLeave = function(ev) {
+        ev.target.classList.remove('drag-over');
+    };
+
+    window.drag = function(ev) {
+        ev.target.classList.add('dragging');
+    };
+
+    window.drop = function(ev) {
+        ev.preventDefault();
+        ev.target.classList.remove('drag-over');
+        const character = ev.target.dataset.character;
+        const correctChar = quotes[currentQuoteIndex].character;
+
+        if (character === correctChar) {
+            // RISPOSTA CORRETTA! +10 punti
+            teams[currentTeamIndex].score += 10;
+            updateScoreboard();
+            
+            // Feedback visivo: slot diventa verde per 2 secondi
+            const charSlot = document.getElementById(`char-${character}`);
+            if (charSlot) {
+                charSlot.style.background = '#4caf50';
+                charSlot.style.color = 'white';
+                charSlot.style.transform = 'scale(1.1)';
+                charSlot.style.transition = 'all 0.3s';
+            }
+            
+            // Dopo 2 secondi torna normale e passa alla prossima quote
+            setTimeout(() => {
+                if (charSlot) {
+                    charSlot.style.background = '';
+                    charSlot.style.color = '';
+                    charSlot.style.transform = '';
+                }
+                currentQuoteIndex++;
+                render(); // Mostra prossima citazione
+            }, 2000);
+            
+        } else {
+            // RISPOSTA SBAGLIATA! Tiene i punti ma perde il turno
+            clearInterval(timerInterval);
+            
+            // Feedback visivo: slot diventa rosso per 1.5 secondi
+            const charSlot = document.getElementById(`char-${character}`);
+            if (charSlot) {
+                charSlot.style.background = 'var(--brick-ember)';
+                charSlot.style.color = 'white';
+                charSlot.style.transform = 'scale(1.1)';
+                charSlot.style.transition = 'all 0.3s';
+            }
+            
+            setTimeout(() => {
+                if (charSlot) {
+                    charSlot.style.background = '';
+                    charSlot.style.color = '';
+                    charSlot.style.transform = '';
+                }
+                
+                alert(`❌ Wrong!\n\nThe quote was from ${correctChar}, not ${character}.\n\n${teams[currentTeamIndex].name} keeps their points!\nNext team continues from quote ${currentQuoteIndex + 1}!`);
+                
+                teamsAttempted.add(currentTeamIndex);
+                
+                if (teamsAttempted.size === teams.length) {
+                    alert("All teams attempted but no one completed all quotes!\nGame over.");
+                    showScoreboard();
+                } else {
+                    currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                    while (teamsAttempted.has(currentTeamIndex)) {
+                        currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                    }
+                    updateScoreboard();
+                    render(); // La prossima squadra continua dalla stessa quote
+                }
+            }, 1500);
+        }
+    };
+
+    window.skipToNextTeam = function() {
+        clearInterval(timerInterval);
+        
+        alert(`${teams[currentTeamIndex].name} skipped their turn and keeps their points.`);
+        
+        teamsAttempted.add(currentTeamIndex);
+        
+        if (teamsAttempted.size === teams.length) {
+            alert("All teams have played. Game over.");
+            showScoreboard();
+        } else {
+            currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+            while (teamsAttempted.has(currentTeamIndex)) {
+                currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+            }
+            updateScoreboard();
             render();
         }
+    };
+
+    render();
+}
+
+
 
 // MEMORY GAME con punti per ogni coppia trovata
 function startMemoryGame() {
@@ -1111,7 +1227,7 @@ function startMemoryGame() {
             
             document.getElementById('gameArea').innerHTML = `
                 <div class="wheel-container">
-                    <h2>🎡 Wheel of Fortune</h2>
+                    <h2>🎡 The hangman</h2>
                     <p><strong>Current Team:</strong> ${teams[currentTeamIndex].name} ${teams[currentTeamIndex].emblem}</p>
                     <p><strong>Clue:</strong> ${puzzle.clue}</p>
                     <div class="word-display" id="wordDisplay"></div>
@@ -1305,60 +1421,351 @@ function startMemoryGame() {
             showClue();
         }
 
-        // GRAMMAR CHALLENGE
-        const grammarQuestions = [
-            {
-                text: "Romeo ___ a Montague.",
-                options: ["is", "are", "has"],
-                correct: "is"
-            },
-            {
-                text: "Juliet ___ two cousins.",
-                options: ["have", "has", "is"],
-                correct: "has"
-            },
-            {
-                text: "The families ___ enemies.",
-                options: ["is", "are", "has"],
-                correct: "are"
-            },
-            {
-                text: "Friar Lawrence ___ a plan.",
-                options: ["have", "has", "is"],
-                correct: "has"
-            }
-        ];
+// GRAMMAR CHALLENGE - Expanded con passato e trama
+const grammarQuestions = [
+    // PRESENT SIMPLE - be/have
+    {
+        text: "Romeo ___ a Montague.",
+        options: ["is", "are", "am"],
+        correct: "is"
+    },
+    {
+        text: "Juliet ___ two cousins.",
+        options: ["have", "has", "is"],
+        correct: "has"
+    },
+    {
+        text: "The families ___ enemies.",
+        options: ["is", "are", "was"],
+        correct: "are"
+    },
+    {
+        text: "Friar Lawrence ___ a plan.",
+        options: ["have", "is", "had"],
+        correct: "had"
+    },
+    {
+        text: "The Nurse ___ Juliet's friend.",
+        options: ["is", "are", "has"],
+        correct: "is"
+    },
+    {
+        text: "Benvolio and Mercutio ___ Romeo's friends.",
+        options: ["is", "are", "was"],
+        correct: "are"
+    },
+    
+    // PAST SIMPLE - Regular plot events
+    {
+        text: "Romeo ___ Juliet at the party.",
+        options: ["meet", "meets", "meeting"],
+        correct: "meets"
+    },
+    {
+        text: "Tybalt ___ Mercutio in the street.",
+        options: ["kill", "killer", "killed"],
+        correct: "killed"
+    },
+    {
+        text: "Romeo ___ to Mantua after the fight.",
+        options: ["escape", "escape", "escaped"],
+        correct: "escaped"
+    },
+    {
+        text: "Juliet ___ the sleeping potion.",
+        options: ["drink", "drinks", "drank"],
+        correct: "drank"
+    },
+    {
+        text: "The Prince ___ Romeo from Verona.",
+        options: ["banish", "banishes", "have banished"],
+        correct: "banishes"
+    },
+    {
+        text: "Friar Lawrence ___ Romeo and Juliet.",
+        options: ["marry", "marries", "marriage"],
+        correct: "marries"
+    },
+    {
+        text: "The families ___ at the end.",
+        options: ["reconcile", "reconciles", "has reconciled"],
+        correct: "reconcile"
+    },
+    {
+        text: "Juliet ___ up after Romeo died.",
+        options: ["waking", "wake", "woke"],
+        correct: "woke"
+    },
+    {
+        text: "Paris ___ to marry Juliet.",
+        options: ["wanting", "want", "wanted"],
+        correct: "wanted"
+    },
+    
+    // PAST SIMPLE - Irregular verbs
+    {
+        text: "Romeo ___ in love immediately.",
+        options: ["fall", "falls", "falling"],
+        correct: "falls"
+    },
+    {
+        text: "Romeo ___ Tybalt to avenge Mercutio.",
+        options: ["fight", "fighted", "fought"],
+        correct: "fought"
+    },
+    {
+        text: "The Nurse ___ messages between the lovers.",
+        options: ["brought", "bring", "bringed"],
+        correct: "brought"
+    },
+    {
+        text: "Juliet ___ herself with Romeo's dagger.",
+        options: ["killed", "kill", "killer"],
+        correct: "killed"
+    },
 
-        function startGrammarGame() {
-            const question = grammarQuestions[Math.floor(Math.random() * grammarQuestions.length)];
+    {
+        text: "Romeo ___ over the wall to see Juliet.",
+        options: ["climb", "climbs", "climber"],
+        correct: "climbs"
+    },
+    {
+        text: "The lovers ___ their wedding night together.",
+        options: ["spending", "spends", "spent"],
+        correct: "spent"
+    },
+    
+    // PRESENT vs PAST mix
+    {
+        text: "In the play, Romeo ___ Rosaline before meeting Juliet.",
+        options: ["love", "loves", "loved"],
+        correct: "loved"
+    },
+    {
+        text: "At the beginning, the families ___ each other.",
+        options: ["hate", "hates", "hated"],
+        correct: "hated"
+    },
+    {
+        text: "Lady Capulet ___ Juliet to marry Paris.",
+        options: ["tells", "says", "say"],
+        correct: "tells"
+    },
+    {
+        text: "Romeo ___ poison from the Apothecary.",
+        options: ["get", "got", "gotten"],
+        correct: "got"
+    },
+    {
+        text: "The story ___ place in Verona, Italy.",
+        options: ["take", "takes", "taken"],
+        correct: "takes"
+    },
+    
+    // questions
+    {
+        text: "___ Romeo know about Friar Lawrence's plan?",
+        options: ["Do", "Does", "Is"],
+        correct: "Does"
+    },
+    {
+        text: "___ Juliet want to marry Paris?",
+        options: ["Do", "Is", "Did"],
+        correct: "Did"
+    },
+    {
+        text: "___ the play end happily?",
+        options: ["Do", "Does", "Did"],
+        correct: "Does"
+    },
+    {
+        text: "___ Mercutio and Tybalt die in the same fight?",
+        options: ["Do", "Does", "Did"],
+        correct: "Did"
+    },
+    // PRESENT CONTINUOUS - Actions happening in the story
+    {
+        text: "Romeo and Juliet ___ in love.",
+        options: ["falls", "are falling", "is falling"],
+        correct: "are falling"
+    },
+    {
+        text: "The Nurse ___ a message to Romeo.",
+        options: ["bring", "is bringing", "are bringing"],
+        correct: "is bringing"
+    },
+    {
+        text: "Juliet ___ for Romeo on the balcony.",
+        options: ["wait", "is waiting", "are waiting"],
+        correct: "is waiting"
+    },
+    {
+        text: "The servants ___ in the street.",
+        options: ["fights", "is fighting", "are fighting"],
+        correct: "are fighting"
+    },
+
+    {
+        text: "Friar Lawrence ___ herbs in his cell.",
+        options: ["collect", "collects", "are collecting"],
+        correct: "collects"
+    },
+    {
+        text: "Juliet ___ about her secret marriage.",
+        options: ["worry", "worries", "are worrying"],
+        correct: "worries"
+    },
+    {
+        text: "The Prince ___ to stop the fighting.",
+        options: ["try", "is trying", "are trying"],
+        correct: "is trying"
+    },
+
+    {
+        text: "The lovers ___ goodbye at dawn.",
+        options: ["says", "is saying", "are saying"],
+        correct: "are saying"
+    }
+];
+// GRAMMAR CHALLENGE - Timer-based con passaggio turno
+
+function startGrammarGame() {
+    let availableQuestions = [...grammarQuestions]; // Copia di tutte le domande
+    let usedQuestions = []; // Domande già usate
+    let teamScores = teams.map(() => 0); // Punteggi per team in questo round
+    let teamsFinished = new Set(); // Squadre che hanno finito il loro turno
+    let timeLeft = 40;
+    let timerInterval;
+
+    function playTurn() {
+        // Se tutte le squadre hanno giocato, finisci il gioco
+        if (teamsFinished.size === teams.length) {
+            // Assegna i punteggi finali
+            teams.forEach((team, index) => {
+                team.score += teamScores[index];
+            });
+            updateScoreboard();
+            
+            // Mostra classifica finale del round
+            let results = teams.map((team, i) => 
+                `${team.emblem} ${team.name}: ${teamScores[i]} points`
+            ).join('\n');
+            alert(`📝 Grammar Challenge Complete!\n\n${results}`);
+            showScoreboard();
+            return;
+        }
+
+        // Salta le squadre che hanno già finito
+        while (teamsFinished.has(currentTeamIndex)) {
+            currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+        }
+
+        timeLeft = 40;
+        let currentQuestion;
+
+        function getNextQuestion() {
+            // Prima prova con domande non usate
+            if (availableQuestions.length > 0) {
+                const index = Math.floor(Math.random() * availableQuestions.length);
+                currentQuestion = availableQuestions[index];
+                availableQuestions.splice(index, 1);
+                usedQuestions.push(currentQuestion);
+                return true;
+            } 
+            // Se finite le nuove, usa quelle già usate
+            else if (usedQuestions.length > 0) {
+                const index = Math.floor(Math.random() * usedQuestions.length);
+                currentQuestion = usedQuestions[index];
+                return true;
+            }
+            return false;
+        }
+
+        function showQuestion() {
+            if (!getNextQuestion()) {
+                alert("No more questions available!");
+                teamsFinished.add(currentTeamIndex);
+                currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                updateScoreboard();
+                playTurn();
+                return;
+            }
 
             document.getElementById('gameArea').innerHTML = `
                 <div style="text-align: center;">
                     <h2>📝 Grammar Challenge</h2>
                     <p><strong>Current Team:</strong> ${teams[currentTeamIndex].name} ${teams[currentTeamIndex].emblem}</p>
-                    <h3 style="margin: 40px 0; font-size: 1.8em;">${question.text}</h3>
+                    <div class="timer" id="grammarTimer" style="font-size: 2.5em; margin: 20px 0;">${timeLeft}s</div>
+                    <p style="font-size: 1.1em; margin: 10px 0; color: var(--velvet-orchid);">
+                        Score this turn: ${teamScores[currentTeamIndex]} points
+                    </p>
+                    <p style="font-size: 0.9em; color: #666; margin-bottom: 20px;">
+                        ${availableQuestions.length > 0 
+                            ? `📋 ${availableQuestions.length} fresh questions left` 
+                            : '🔄 Recycling answered questions'}
+                    </p>
+                    <h3 style="margin: 40px 0; font-size: 1.8em;">${currentQuestion.text}</h3>
                     <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-                        ${question.options.map(option => 
+                        ${currentQuestion.options.map(option => 
                             `<button class="btn" style="padding: 20px 40px; font-size: 1.5em;" 
-                                onclick="checkGrammar('${option}', '${question.correct}')">${option}</button>`
+                                onclick="checkAnswer('${option}')">${option}</button>`
                         ).join('')}
                     </div>
-                    <button class="btn" onclick="showScoreboard()" style="margin-top: 40px;">Back to Menu</button>
+                    <p style="margin-top: 30px; font-size: 0.9em; color: #999;">
+                        ⚠️ Wrong answer = lose your turn!
+                    </p>
                 </div>
             `;
+
+            // Avvia il timer se non è già attivo
+            if (!timerInterval) {
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    const timerEl = document.getElementById('grammarTimer');
+                    if (timerEl) {
+                        timerEl.textContent = `${timeLeft}s`;
+                        if (timeLeft <= 10) {
+                            timerEl.style.color = 'var(--brick-ember)';
+                        }
+                    }
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        alert(`⏰ Time's up!\n${teams[currentTeamIndex].name} scored ${teamScores[currentTeamIndex]} points this turn!`);
+                        teamsFinished.add(currentTeamIndex);
+                        currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                        updateScoreboard();
+                        playTurn();
+                    }
+                }, 1000);
+            }
         }
 
-        window.checkGrammar = function(selected, correct) {
-            if (selected === correct) {
-                teams[currentTeamIndex].score += 20;
-                alert('Correct! +20 points');
+        window.checkAnswer = function(selected) {
+            if (selected === currentQuestion.correct) {
+                // Risposta corretta! +10 punti e prossima domanda
+                teamScores[currentTeamIndex] += 10;
+                setTimeout(() => {
+                    showQuestion();
+                }, 300);
             } else {
-                alert('Wrong! Next team...');
+                // Risposta sbagliata! Perde il turno
+                clearInterval(timerInterval);
+                timerInterval = null;
+                alert(`❌ Wrong!\n${teams[currentTeamIndex].name} scored ${teamScores[currentTeamIndex]} points this turn.\nNext team!`);
+                teamsFinished.add(currentTeamIndex);
                 currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+                updateScoreboard();
+                playTurn();
             }
-            updateScoreboard();
-            startGrammarGame();
         };
+
+        showQuestion();
+    }
+
+    playTurn();
+}
     </script>
 </body>
 </html>
