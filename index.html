@@ -291,7 +291,6 @@
             text-align: center;
             margin: 40px 0;
             color: var(--velvet-orchid);
-            min-height: 150px;
         }
 
         .timer {
@@ -514,41 +513,42 @@
             <h2 style="text-align: center; margin-bottom: 30px;">Create Your Teams</h2>
             <div class="team-setup">
                 <div class="team-input">
-                    <h3>Team 1: Montagues ⚔️</h3>
+                    <h3>Team 1:</h3>
                     <input type="text" id="team1Name" placeholder="Team Name" value="Montagues">
                     <select id="team1Emblem">
                         <option value="🦁">🦁 Lion</option>
                         <option value="🗡️">🗡️ Sword</option>
-                        <option value="👑">👑 Crown</option>
+                        <option value="🗝️">🗝️ Key</option>
                         <option value="🛡️">🛡️ Shield</option>
                         <option value="⚔️">⚔️ Crossed Swords</option>
                     </select>
                 </div>
                 <div class="team-input">
-                    <h3>Team 2: Capulets 🏰</h3>
+                    <h3>Team 2:</h3>
                     <input type="text" id="team2Name" placeholder="Team Name" value="Capulets">
                     <select id="team2Emblem">
                         <option value="🦅">🦅 Eagle</option>
                         <option value="🏰">🏰 Castle</option>
-                        <option value="💎">💎 Diamond</option>
-                        <option value="🌹">🌹 Rose</option>
-                        <option value="👑">👑 Crown</option>
+                        <option value="💎">💎 Diamond</option>    
+                        <option value="🎭">🎭 Theatre Masks</option>
+                        <option value="✨">✨ Stars</option>
+                        
                     </select>
                 </div>
                 <div class="team-input">
-                    <h3>Team 3: The Prince's Court 👨‍⚖️</h3>
+                    <h3>Team 3:</h3>
                     <input type="text" id="team3Name" placeholder="Team Name" value="The Court">
                     <select id="team3Emblem">
+                        <option value="👑">👑 Crown</option>
                         <option value="⚖️">⚖️ Scales</option>
+                        <option value="🌹">🌹 Rose</option>
                         <option value="📜">📜 Scroll</option>
-                        <option value="🎭">🎭 Theatre Masks</option>
-                        <option value="✨">✨ Stars</option>
                         <option value="🕊️">🕊️ Dove</option>
                     </select>
                 </div>
                 <div class="team-input">
-                    <h3>Team 4: Star-Crossed Lovers 💫</h3>
-                    <input type="text" id="team4Name" placeholder="Team Name" value="Star-Crossed">
+                    <h3>Team 4:</h3>
+                    <input type="text" id="team4Name" placeholder="Team Name" value="The Lovers">
                     <select id="team4Emblem">
                         <option value="💖">💖 Heart</option>
                         <option value="💫">💫 Stars</option>
@@ -660,72 +660,85 @@
         ];
 
         function startNumberGame() {
-            const question = numberQuestions[Math.floor(Math.random() * numberQuestions.length)];
-            let timeLeft = 10;
-            let timerInterval;
+    const question = numberQuestions[Math.floor(Math.random() * numberQuestions.length)];
+    let timeLeft = 10;
 
-            document.getElementById('gameArea').innerHTML = `
-                <div style="text-align: center;">
-                    <h2>🔢 The Number Game</h2>
-                    <div class="timer" id="timer">10</div>
-                    <div class="number-question">${question.question}</div>
-                    <p style="font-size: 1.3em; color: #666;">Students write their answers on paper!</p>
-                    <button class="btn" id="startTimerBtn" onclick="startTimer()">Start Timer</button>
-                    <div id="answerReveal" style="display: none;">
-                        <div class="correct-answer">Answer: ${question.answer}</div>
-                    </div>
-                    <div id="inputSection" style="display: none;">
-                        <h3 style="margin: 30px 0;">Enter Team Answers:</h3>
-                        <div class="score-input-grid">
-                            ${teams.map((team, i) => `
-                                <div class="score-input-box">
-                                    <strong>${team.emblem} ${team.name}</strong>
-                                    <input type="number" id="answer${i}" placeholder="Answer">
-                                </div>
-                            `).join('')}
+    document.getElementById('gameArea').innerHTML = `
+        <div style="text-align: center;">
+            <h2>🔢 The Number Game</h2>
+            <div class="timer" id="timer">10</div>
+            <div class="number-question">${question.question}</div>
+            <div id="answerReveal" style="display: none;">
+                <div class="correct-answer">Answer: ${question.answer}</div>
+            </div>
+            <p style="font-size: 1.3em; color: #666; margin: 20px 0;">Students write their answers on paper!</p>
+            <button class="btn" id="startTimerBtn" onclick="startNumberTimer()">Start Timer</button>
+            <button class="btn" id="showAnswerBtn" onclick="showNumberAnswer()">Show Answer Now</button>
+
+            <div id="inputSection" style="display: none;">
+                <h3 style="margin: 30px 0;">Enter Team Answers:</h3>
+                <div class="score-input-grid">
+                    ${teams.map((team, i) => `
+                        <div class="score-input-box">
+                            <strong>${team.emblem} ${team.name}</strong>
+                            <input type="number" id="answer${i}" placeholder="Answer">
                         </div>
-                        <button class="btn" onclick="checkNumberAnswers(${question.answer})">Check Answers</button>
-                    </div>
-                    <button class="btn" onclick="showScoreboard()">Back to Menu</button>
+                    `).join('')}
                 </div>
-            `;
+                <button class="btn" onclick="checkNumberAnswers(${question.answer})">Check Answers</button>
+            </div>
+            <button class="btn" onclick="showScoreboard()">Back to Menu</button>
+        </div>
+    `;
 
-            window.startTimer = function() {
-                document.getElementById('startTimerBtn').disabled = true;
-                timerInterval = setInterval(() => {
-                    timeLeft--;
-                    document.getElementById('timer').textContent = timeLeft;
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        document.getElementById('timer').textContent = "TIME'S UP!";
-                        setTimeout(() => {
-                            document.getElementById('answerReveal').style.display = 'block';
-                            setTimeout(() => {
-                                document.getElementById('inputSection').style.display = 'block';
-                            }, 1000);
-                        }, 1000);
-                    }
+    window.startNumberTimer = function() {
+        document.getElementById('startTimerBtn').disabled = true;
+        globalTimerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').textContent = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(globalTimerInterval);
+                globalTimerInterval = null;
+                document.getElementById('timer').textContent = "TIME'S UP!";
+                setTimeout(() => {
+                    document.getElementById('answerReveal').style.display = 'block';
+                    
+                    document.getElementById('inputSection').style.display = 'block';
+                    
                 }, 1000);
-            };
-        }
+            }
+        }, 1000);
+    };
 
-        function checkNumberAnswers(correctAnswer) {
-            teams.forEach((team, i) => {
-                const answer = parseInt(document.getElementById(`answer${i}`).value);
-                const diff = Math.abs(answer - correctAnswer);
-                if (diff === 0) {
-                    team.score += 50;
-                } else if (diff === 1) {
-                    team.score += 30;
-                } else if (diff === 2) {
-                    team.score += 10;
-                }
-            });
-            updateScoreboard();
-            alert(`Correct answer was: ${correctAnswer}\nScores updated!`);
-            showScoreboard();
+    window.showNumberAnswer = function() {
+        if (globalTimerInterval) {
+            clearInterval(globalTimerInterval);
+            globalTimerInterval = null;
         }
+        document.getElementById('answerReveal').style.display = 'block';
+        document.getElementById('inputSection').style.display = 'block';
+        document.getElementById('startTimerBtn').style.display = 'none';
+        document.getElementById('showAnswerBtn').style.display = 'none';
+       
+    };
+}
 
+function checkNumberAnswers(correctAnswer) {
+    teams.forEach((team, i) => {
+        const answer = parseInt(document.getElementById(`answer${i}`).value);
+        const diff = Math.abs(answer - correctAnswer);
+        if (diff === 0) {
+            team.score += 50;
+        } else if (diff === 1) {
+            team.score += 30;
+        } else if (diff === 2) {
+            team.score += 10;
+        }
+    });
+    updateScoreboard();
+    alert(`Correct answer was: ${correctAnswer}\nScores updated!`);
+    showScoreboard();
+}
 // SPEED ROUND con bonus velocità
 const speedQuestions = [
     { question: "Romeo is a Capulet", answer: false },
